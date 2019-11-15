@@ -84,7 +84,7 @@ EXIT /B 0
 :SetDatabaseCredentials
   cls
   echo ----------------------------------------------------------
-  echo SETTING MONGODB CONNECTION CREDENTIALS
+  echo MONGODB CONNECTION CREDENTIALS SETUP
   echo ----------------------------------------------------------
   echo [1] Enter database host: %MONGO_HOST%
   echo [2] Enter database name: %MONGO_DB%
