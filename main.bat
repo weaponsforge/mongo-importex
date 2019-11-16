@@ -28,6 +28,10 @@ GoTo Main
   set tempfile=%cd%\.tempfile
   echo %tempfile%
 
+  if exist .dbs (
+    del /f .dbs
+  )
+
   GoTo FetchFile
 EXIT /B o
 
@@ -81,8 +85,9 @@ EXIT /B 0
   echo.
   echo [1] Export Database
   echo [2] Import Database
-  echo [3] Update Connection Credentials
-  echo [4] Reset
+  echo [3] Drop Database
+  echo [4] Update Connection Credentials
+  echo [5] Reset
   echo [x] Exit
   set "choice=-1"
   echo.
@@ -90,8 +95,9 @@ EXIT /B 0
 
   if %choice% EQU 1 GoTo ExportDatabase
   if %choice% EQU 2 GoTo SelectDatabaseToImport
-  if %choice% EQU 3 Goto SetDatabaseCredentials
-  if %choice% EQU 4 Goto ResetData
+  if %choice% EQU 3 Goto DeleteDatabase
+  if %choice% EQU 4 Goto SetDatabaseCredentials
+  if %choice% EQU 5 Goto ResetData
   if %choice% == x EXIT /B 0
   Goto ViewDatabaseCredentials
 EXIT /B 0
@@ -254,7 +260,7 @@ EXIT /B 0
 
   set "con="
   echo Are you sure you want to import [%db%]
-  set /p con=to the above database? [Y/n]:
+  set /p con=to the above database server? [Y/n]:
 
   echo.%con% | findstr /C:"Y">nul && (
     echo Starting database import...
@@ -294,6 +300,66 @@ EXIT /B 0
 EXIT /B 0
 
 
+:: Ask which database to drop. Only local databases can be dropped atm
+:DeleteDatabase
+  cls
+  echo ----------------------------------------------------------
+  echo DROP DATABASE
+  echo ----------------------------------------------------------
+  set "del=-"
+  echo Enter the name of the database to drop.
+  echo Only local databases (localhost) can be deleted atm.
+  set /p del=Type "x" to exit:
+
+  if %del% == x  GoTo ViewDatabaseCredentials
+  echo.%del% | findstr [A-Za-z]>nul && (
+    GoTo DropDatabase
+  ) || (
+    GoTo DeleteDatabase
+  )
+EXIT /B 0
+
+
+:: Drop a database from the localhost connection.
+:: Only local databases can be dropped atm
+:DropDatabase
+  echo.
+  echo ----------------------------------------------------------
+  echo CURRENT DATABASE CONNECTION
+  echo  - Host: %MONGO_HOST%
+  echo  - Database name: %del%
+  echo  - Port: %MONGO_PORT%
+  echo  - User: %MONGO_USER%
+  echo  - Password: %MONGO_PASSWORD%
+
+  set "con="
+  echo Are you sure you want to drop [%del%]
+  set /p con=from the above database server? [Y/n]:
+
+  echo.%con% | findstr /C:"Y">nul && (
+    echo.
+    if %MONGO_HOST% NEQ localhost (
+      echo Only local databases can be dropped atm.
+      set /p go=Update your database credentials to localhost and try again.
+    ) else (
+      echo Dropping database...
+      mongo --eval "printjson(db.adminCommand( { listDatabases: 1, nameOnly:true } ))" > .dbs
+
+      echo. | findstr /C:%del% .dbs && (
+        mongo %del% --eval "db.dropDatabase()"
+        set /A NextScreen=_ViewDatabaseCredentials
+        GoTo ShowDatabases
+      ) || (
+        echo Database [%del%] was not found.
+        set /p go=Press enter to continue...
+      )
+    )
+  )
+
+  GoTo ViewDatabaseCredentials
+EXIT /B 0
+
+
 :: Save (cache) new values for the database credentials
 :SaveData
   set hasblank=false
@@ -320,15 +386,7 @@ EXIT /B 0
   echo %MONGO_USER% >> %tempfile%
   echo %MONGO_PASSWORD% >> %tempfile%
 
-  if %NextScreen% EQU %_ExportDatabase% (
-    GoTo ExportDatabase
-  ) else if %NextScreen% EQU %_SelectDatabaseToImport% (
-    GoTo SelectDatabaseToImport
-  ) else if %NextScreen% EQU %_SetDatabaseCredentials% (
-    GoTo SetDatabaseCredentials
-  ) else if %NextScreen% EQU %_ViewDatabaseCredentials% (
-    GoTo ViewDatabaseCredentials
-  )
+  GoTo RenderNextScreen
 EXIT /B 0
 
 
@@ -350,4 +408,32 @@ EXIT /B 0
   )
 
   GoTo FetchFile
+EXIT /B 0
+
+
+:: List available databases (on localhost only)
+:ShowDatabases
+  mongo --eval "printjson(db.adminCommand( { listDatabases: 1, nameOnly:true } ))" > .dbs
+
+  echo.
+  echo ----------------------------------------------------------
+  echo Available databases:
+  findstr /C:name .dbs
+
+  set /p go=Press enter to cotinue...
+  GoTo RenderNextScreen
+EXIT /B 0
+
+
+:: Teleport to the next assigned screen
+:RenderNextScreen
+  if %NextScreen% EQU %_ExportDatabase% (
+    GoTo ExportDatabase
+  ) else if %NextScreen% EQU %_SelectDatabaseToImport% (
+    GoTo SelectDatabaseToImport
+  ) else if %NextScreen% EQU %_SetDatabaseCredentials% (
+    GoTo SetDatabaseCredentials
+  ) else if %NextScreen% EQU %_ViewDatabaseCredentials% (
+    GoTo ViewDatabaseCredentials
+  )
 EXIT /B 0
