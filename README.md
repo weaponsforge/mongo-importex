@@ -69,11 +69,12 @@ Windows batch script to automate switching of MongoDB database credentials for a
 
 9. Wait for the database export `(mongodump)` or import `(mongorestore)` process to finish.
 
-10. Quick links for database import, export and database connection updating are available in the **VIEWING THE [ACTIVE] MONGODB CONNECTION CREDENTIALS** screen, which will be accessible after saving the initial database credentials required from **# 3**.
+10. Quick links for database import, export, drop and database credentials updating are available in the **VIEWING THE [ACTIVE] MONGODB CONNECTION CREDENTIALS** screen, which will be accessible after saving the initial database credentials required from **# 3**.
 	- **[1] - Export Database**
 	- **[2] - Import Database**
-	- **[3] - Update Connection Credentials**
-	- **[4] - Reset**
+	- **[3] - Drop Database**
+	- **[4] - Update Connection Credentials**
+	- **[5] - Reset**
 	- **[x] - Exit**
 
 
