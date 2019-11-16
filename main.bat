@@ -20,7 +20,10 @@ GoTo Main
   :: Screen ID's
   set /A _ViewDatabaseCredentials=1
   set /A _SetDatabaseCredentials=2
+  set /A _ExportDatabase=3
+  set /A _SelectDatabaseToImport=4
   set /A PreviousScreen=0
+  set /A NextScreen=0
 
   set tempfile=%cd%\.tempfile
   echo %tempfile%
@@ -33,8 +36,11 @@ EXIT /B o
 :: connection credentials are saved
 :FetchFile
   setlocal enabledelayedexpansion
+
+  :: Reset values
   set /A index=0
   set /A PreviousScreen=0
+  set /A NextScreen=0
 
   if exist %tempfile% (
     (for /f "tokens=*" %%a in (%tempfile%) do (
@@ -126,35 +132,13 @@ EXIT /B 0
   ) else if %choice% EQU 5 (
     set /p MONGO_PASSWORD="Enter password:"
   ) else if %choice% EQU 6 (
-    :: Delete cache
-    if exist %tempfile% (
-      del %tempfile%
-    )
-
-    :: Save new values
-    echo %MONGO_HOST% >> %tempfile%
-    echo %MONGO_DB% >> %tempfile%
-    echo %MONGO_PORT% >> %tempfile%
-    echo %MONGO_USER% >> %tempfile%
-    echo %MONGO_PASSWORD% >> %tempfile%
+    set /A NextScreen=_ExportDatabase
     echo [INFO] New data was saved.
-
-    GoTo ExportDatabase
+    GoTo SaveData
   ) else if %choice% EQU 7 (
-    :: Delete cache
-    if exist %tempfile% (
-      del %tempfile%
-    )
-
-    :: Save new values
-    echo %MONGO_HOST% >> %tempfile%
-    echo %MONGO_DB% >> %tempfile%
-    echo %MONGO_PORT% >> %tempfile%
-    echo %MONGO_USER% >> %tempfile%
-    echo %MONGO_PASSWORD% >> %tempfile%
+    set /A NextScreen = _SelectDatabaseToImport
     set /p go=[INFO] New data was saved.
-
-    GoTo SelectDatabaseToImport
+    GoTo SaveData
   ) else if %choice% EQU 8 (
     echo [WARNING] Data has not yet been saved.
     GoTo ExportDatabase
@@ -286,4 +270,27 @@ EXIT /B 0
   echo if the process finished without errors.
   set /p go=Press enter to continue...
   GoTo FetchFile
+EXIT /B 0
+
+
+:SaveData
+  :: Delete cache
+  if exist %tempfile% (
+    del %tempfile%
+  )
+
+  :: Save new values and proceed to next screen
+  echo %MONGO_HOST% >> %tempfile%
+  echo %MONGO_DB% >> %tempfile%
+  echo %MONGO_PORT% >> %tempfile%
+  echo %MONGO_USER% >> %tempfile%
+  echo %MONGO_PASSWORD% >> %tempfile%
+
+  echo Next %NextScreen%
+
+  if %NextScreen% EQU %_ExportDatabase% (
+    GoTo ExportDatabase
+  ) else if %NextScreen% EQU %_SelectDatabaseToImport% (
+    GoTo SelectDatabaseToImport
+  )
 EXIT /B 0
