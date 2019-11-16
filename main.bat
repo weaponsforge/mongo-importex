@@ -104,6 +104,7 @@ EXIT /B 0
 :: Set the mongodb database connection credentials
 :SetDatabaseCredentials
   set /A PreviousScreen=_SetDatabaseCredentials
+  set /A NextScreen=0
   cls
   echo ----------------------------------------------------------
   echo MONGODB CONNECTION CREDENTIALS SETUP
@@ -113,10 +114,11 @@ EXIT /B 0
   echo [3] Enter port: %MONGO_PORT%
   echo [4] Enter user: %MONGO_USER%
   echo [5] Enter password: %MONGO_PASSWORD%
-  echo [6] Save and Export Database
-  echo [7] Save and Import Database
-  echo [8] Export Database
-  echo [9] Import Database
+  echo [6] Save
+  echo [7] Save and Export Database
+  echo [8] Save and Import Database
+  echo [9] Export Database
+  echo [10] Import Database
   echo [x] Exit
   set "choice=-1"
   set /p choice="Select option:"
@@ -132,17 +134,26 @@ EXIT /B 0
   ) else if %choice% EQU 5 (
     set /p MONGO_PASSWORD="Enter password:"
   ) else if %choice% EQU 6 (
-    set /A NextScreen=_ExportDatabase
-    echo [INFO] New data was saved.
-    GoTo SaveData
+    echo.
+    set /p go=[INFO] New data has been saved.
+    set /A NextScreen=_SetDatabaseCredentials
+    Goto SaveData
   ) else if %choice% EQU 7 (
-    set /A NextScreen = _SelectDatabaseToImport
-    set /p go=[INFO] New data was saved.
+    set /A NextScreen=_ExportDatabase
+    echo.
+    echo [INFO] New data has been saved.
     GoTo SaveData
   ) else if %choice% EQU 8 (
+    set /A NextScreen = _SelectDatabaseToImport
+    echo.
+    set /p go=[INFO] New data has been saved.
+    GoTo SaveData
+  ) else if %choice% EQU 9 (
+    echo.
     echo [WARNING] Data has not yet been saved.
     GoTo ExportDatabase
-  ) else if %choice% EQU 9 (
+  ) else if %choice% EQU 10 (
+    echo.
     set /p go=[WARNING] Data has not yet been saved.
     GoTo SelectDatabaseToImport
   ) else if %choice% EQU x (
@@ -286,11 +297,11 @@ EXIT /B 0
   echo %MONGO_USER% >> %tempfile%
   echo %MONGO_PASSWORD% >> %tempfile%
 
-  echo Next %NextScreen%
-
   if %NextScreen% EQU %_ExportDatabase% (
     GoTo ExportDatabase
   ) else if %NextScreen% EQU %_SelectDatabaseToImport% (
     GoTo SelectDatabaseToImport
+  ) else if %NextScreen% EQU %_SetDatabaseCredentials% (
+    GoTo SetDatabaseCredentials
   )
 EXIT /B 0
