@@ -82,7 +82,7 @@ EXIT /B 0
   echo [1] Export Database
   echo [2] Import Database
   echo [3] Update Connection Credentials
-  echo [4] Reset Connection Credentials
+  echo [4] Reset
   echo [x] Exit
   set "choice=-1"
   echo.
@@ -327,18 +327,22 @@ EXIT /B 0
 EXIT /B 0
 
 
+:: Delete the cached database credentials data
 :ResetData
   set /p go=Are you sure you want to reset the saved database credentials? [Y/n]:
-  :: Delete cache
-  if exist %tempfile% (
-    del %tempfile%
-  )
 
-  set "MONGO_HOST="
-  set "MONGO_DB="
-  set MONGO_PORT=27017
-  set "MONGO_USER="
-  set "MONGO_PASSWORD="
+  echo.%go% | findstr /C:"Y">nul && (
+    :: Delete cache
+    if exist %tempfile% (
+      del %tempfile%
+    )
+
+    set "MONGO_HOST="
+    set "MONGO_DB="
+    set MONGO_PORT=27017
+    set "MONGO_USER="
+    set "MONGO_PASSWORD="
+  )
 
   GoTo FetchFile
 EXIT /B 0
