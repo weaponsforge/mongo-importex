@@ -84,6 +84,7 @@ EXIT /B 0
   echo [3] Update Connection Credentials
   echo [x] Exit
   set "choice=-1"
+  echo.
   set /p choice="Select option:"
 
 
@@ -121,6 +122,7 @@ EXIT /B 0
   echo [10] Import Database
   echo [x] Exit
   set "choice=-1"
+  echo.
   set /p choice="Select option:"
 
   (if %choice% EQU 1 (
