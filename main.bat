@@ -1,5 +1,6 @@
 ::----------------------------------------------------------
 :: Export a mongodb database in binary format.
+:: Import a mongodb database (from mongodump).
 :: weaponsforge;20191026
 ::----------------------------------------------------------
 
