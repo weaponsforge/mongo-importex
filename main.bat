@@ -88,20 +88,12 @@ EXIT /B 0
   echo.
   set /p choice="Select option:"
 
-
-  (if %choice% EQU 1 (
-    GoTo ExportDatabase
-  ) else if %choice% EQU 2 (
-    GoTo SelectDatabaseToImport
-  ) else if %choice% EQU 3 (
-    Goto SetDatabaseCredentials
-  ) else if %choice% EQU 4 (
-    Goto ResetData
-  ) else if %choice% EQU x (
-    EXIT /B 0
-  ) else (
-    GoTO ViewDatabaseCredentials
-  ))
+  if %choice% EQU 1 GoTo ExportDatabase
+  if %choice% EQU 2 GoTo SelectDatabaseToImport
+  if %choice% EQU 3 Goto SetDatabaseCredentials
+  if %choice% EQU 4 Goto ResetData
+  if %choice% == x EXIT /B 0
+  Goto ViewDatabaseCredentials
 EXIT /B 0
 
 
