@@ -82,6 +82,7 @@ EXIT /B 0
   echo [1] Export Database
   echo [2] Import Database
   echo [3] Update Connection Credentials
+  echo [4] Reset Connection Credentials
   echo [x] Exit
   set "choice=-1"
   echo.
@@ -94,6 +95,8 @@ EXIT /B 0
     GoTo SelectDatabaseToImport
   ) else if %choice% EQU 3 (
     Goto SetDatabaseCredentials
+  ) else if %choice% EQU 4 (
+    Goto ResetData
   ) else if %choice% EQU x (
     EXIT /B 0
   ) else (
@@ -245,7 +248,7 @@ EXIT /B 0
   echo  - Password: %MONGO_PASSWORD%
 
   set "con="
-  echo Are you sure you want to continue to import [%db%]
+  echo Are you sure you want to import [%db%]
   set /p con=to the above database? [Y/n]:
 
   echo.%con% | findstr /C:"Y">nul && (
@@ -306,4 +309,21 @@ EXIT /B 0
   ) else if %NextScreen% EQU %_SetDatabaseCredentials% (
     GoTo SetDatabaseCredentials
   )
+EXIT /B 0
+
+
+:ResetData
+  set /p go=Are you sure you want to reset the saved database credentials? [Y/n]:
+  :: Delete cache
+  if exist %tempfile% (
+    del %tempfile%
+  )
+
+  set "MONGO_HOST="
+  set "MONGO_DB="
+  set MONGO_PORT=27017
+  set "MONGO_USER="
+  set "MONGO_PASSWORD="
+
+  GoTo FetchFile
 EXIT /B 0
