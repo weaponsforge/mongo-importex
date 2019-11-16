@@ -153,7 +153,7 @@ EXIT /B 0
     set /p go=[WARNING] Data has not yet been saved.
     GoTo SelectDatabaseToImport
   ) else if %choice% EQU x (
-    Goto ViewDatabaseCredentials
+    Goto FetchFile
   ))
 
   GoTo SetDatabaseCredentials
