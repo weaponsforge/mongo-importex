@@ -278,28 +278,6 @@ EXIT /B 0
 EXIT /B 0
 
 
-:: Display a success notification
-:HandleFinish
-  echo.
-  echo Database export has finished.
-  echo [%MONGO_DB%] is saved to %cd%\%MONGO_DB%
-  echo if the process finished without errors.
-  set /p go=Press enter to continue...
-  GoTo FetchFile
-EXIT /B 0
-
-
-:: Display a success notification
-:HandleFinishImport
-  echo.
-  echo Database import has finished.
-  echo [%db%] has been imported to %MONGO_DB%
-  echo if the process finished without errors.
-  set /p go=Press enter to continue...
-  GoTo FetchFile
-EXIT /B 0
-
-
 :: Ask which database to drop. Only local databases can be dropped atm
 :DeleteDatabase
   cls
@@ -327,7 +305,7 @@ EXIT /B 0
   echo ----------------------------------------------------------
   echo CURRENT DATABASE CONNECTION
   echo  - Host: %MONGO_HOST%
-  echo  - Database name: %del%
+  echo  - Database to drop: %del%
   echo  - Port: %MONGO_PORT%
   echo  - User: %MONGO_USER%
   echo  - Password: %MONGO_PASSWORD%
@@ -411,6 +389,11 @@ EXIT /B 0
 EXIT /B 0
 
 
+::----------------------------------------------------------
+::  Utility helper scripts
+::----------------------------------------------------------
+
+
 :: List available databases (on localhost only)
 :ShowDatabases
   mongo --eval "printjson(db.adminCommand( { listDatabases: 1, nameOnly:true } ))" > .dbs
@@ -422,6 +405,28 @@ EXIT /B 0
 
   set /p go=Press enter to cotinue...
   GoTo RenderNextScreen
+EXIT /B 0
+
+
+:: Display a success notification
+:HandleFinish
+  echo.
+  echo Database export has finished.
+  echo [%MONGO_DB%] is saved to %cd%\%MONGO_DB%
+  echo if the process finished without errors.
+  set /p go=Press enter to continue...
+  GoTo FetchFile
+EXIT /B 0
+
+
+:: Display a success notification
+:HandleFinishImport
+  echo.
+  echo Database import has finished.
+  echo [%db%] has been imported to %MONGO_DB%
+  echo if the process finished without errors.
+  set /p go=Press enter to continue...
+  GoTo FetchFile
 EXIT /B 0
 
 
