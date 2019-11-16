@@ -22,7 +22,7 @@ GoTo Main
   set /A _SetDatabaseCredentials=2
   set /A PreviousScreen=0
 
-  set tempfile=%cd%\.tempfile-export
+  set tempfile=%cd%\.tempfile
   echo %tempfile%
 
   GoTo FetchFile
