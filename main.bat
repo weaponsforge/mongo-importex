@@ -153,7 +153,14 @@ EXIT /B 0
     set /p go=[WARNING] Data has not yet been saved.
     GoTo SelectDatabaseToImport
   ) else if %choice% EQU x (
-    Goto FetchFile
+    if exist %tempfile% (
+      Goto FetchFile
+    ) else (
+      echo.
+      echo Is highly recommended to enter and save database
+      set /p go=connection credentials [1-5] to cache for future use.
+      EXIT /B 0
+    )
   ))
 
   GoTo SetDatabaseCredentials
@@ -177,7 +184,7 @@ EXIT /B 0
 
     Goto HandleFinish
   ) || (
-    GoTo ViewDatabaseCredentials
+    GoTo FetchFile
   )
 EXIT /B 0
 
@@ -203,7 +210,11 @@ EXIT /B 0
   set /p db=Type "x" to Exit:
 
   if %db% EQU x (
-    GoTo ViewDatabaseCredentials
+    if exist %tempfile% (
+      GoTo FetchFile
+    ) else (
+      GoTo SetDatabaseCredentials
+    )
   ) else if %db% NEQ - (
     GoTo ImportDatabase
   ) else (
@@ -238,7 +249,6 @@ EXIT /B 0
 
     Goto HandleFinishImport
   ) || (
-    echo import: %import%
     GoTo SelectDatabaseToImport
   )
 EXIT /B 0
@@ -262,5 +272,5 @@ EXIT /B 0
   echo [%db%] has been imported to %MONGO_DB%
   echo if the process finished without errors.
   set /p go=Press enter to continue...
-  GoTo ViewDatabaseCredentials
+  GoTo FetchFile
 EXIT /B 0
