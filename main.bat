@@ -70,6 +70,7 @@ EXIT /B 0
   echo [2] Import Database
   echo [3] Update Connection Credentials
   echo [x] Exit
+  set "choice=-1"
   set /p choice="Select option:"
 
   (if %choice% EQU 1 (
@@ -98,7 +99,9 @@ EXIT /B 0
   echo [4] Enter user: %MONGO_USER%
   echo [5] Enter password: %MONGO_PASSWORD%
   echo [6] Save and Export Database
-  echo [7] Export Database
+  echo [7] Save and Import Database
+  echo [8] Export Database
+  echo [9] Import Database
   echo [x] Exit
   set "choice=-1"
   set /p choice="Select option:"
@@ -129,8 +132,26 @@ EXIT /B 0
 
     GoTo ExportDatabase
   ) else if %choice% EQU 7 (
+    :: Delete cache
+    if exist %tempfile% (
+      del %tempfile%
+    )
+
+    :: Save new values
+    echo %MONGO_HOST% >> %tempfile%
+    echo %MONGO_DB% >> %tempfile%
+    echo %MONGO_PORT% >> %tempfile%
+    echo %MONGO_USER% >> %tempfile%
+    echo %MONGO_PASSWORD% >> %tempfile%
+    set /p go=[INFO] New data was saved.
+
+    GoTo SelectDatabaseToImport
+  ) else if %choice% EQU 8 (
     echo [WARNING] Data has not yet been saved.
     GoTo ExportDatabase
+  ) else if %choice% EQU 9 (
+    set /p go=[WARNING] Data has not yet been saved.
+    GoTo SelectDatabaseToImport
   ) else if %choice% EQU x (
     Goto ViewDatabaseCredentials
   ))
