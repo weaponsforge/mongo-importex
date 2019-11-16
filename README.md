@@ -5,6 +5,7 @@
 - Imports `(mongorestore)` the exported binary database into a new database. 
 
 
+
 ### Dependencies
 
 1. **Windows 10 OS 64-bit**
@@ -51,12 +52,26 @@ Windows batch script to automate switching of MongoDB database credentials for a
 	- **[3]** - database user
 	- **[4]** - database user's password
 
-4. Press **[6] Save and Export Database** to save the previously encoded database credentials for future use. The database export process will proceed soon after.
+4. Press **[6] Save and Export Database** to save the previously encoded database credentials for future use. The database export `(mongodump)` process will proceed soon after.
 
-5. Press **[7] Export Database** to start the database export process using the credentials that have been previously encoded.
+5. If you already have exported binary databases directories saved in this project's root directory, press **[7] - Save and Import Database** to save the previously encoded database credentials for future use, and to start the  database import `(mongorestore)` of the available database which you will get to select on the resulting **AVAILABLE DATABASES TO IMPORT** screen.
+
+
+6. Press **[8] Export Database** to start the database export process using the credentials that have been previously encoded.
 	> **NOTE:** Any updates made to the database credentials will NOT be saved if this option is chosen.
 
-6. Wait for the database export `(mongodump)` process to finish.
+7. Press **[9] Import Database** to  select a binary database to import from the **AVAILABLE DATABASES TO IMPORT** screen. A list of exported binary database directories will be listed.
+	> **NOTE:** Any updates made to the database credentials will NOT be saved if this option is chosen.
+	- Enter the name of the database you want to import, or
+	- Press **"x"** to exit.
+
+8. Wait for the database export `(mongodump)` or import `(mongorestore)` process to finish.
+
+9. Quick links for database import, export and database connection updating are available in the **VIEWING THE [ACTIVE] MONGODB CONNECTION CREDENTIALS** screen, which will be accessible after saving the initial database credentials required from **# 3**.
+	- **[1] - Export Database**
+	- **[2] - Import Database**
+	- **[3] - Update Connection Credentials**
+	- **[x] - Exit**
 
 
 
