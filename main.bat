@@ -8,7 +8,7 @@
 GoTo Main
 
 
-:: Display the main menu
+:: Display the main menu, set global constants values
 :Main
   :: Database connection credentials
   set "MONGO_HOST="
@@ -16,6 +16,11 @@ GoTo Main
   set MONGO_PORT=27017
   set "MONGO_USER="
   set "MONGO_PASSWORD="
+
+  :: Screen ID's
+  set /A _ViewDatabaseCredentials=1
+  set /A _SetDatabaseCredentials=2
+  set /A PreviousScreen=0
 
   set tempfile=%cd%\.tempfile-export
   echo %tempfile%
@@ -29,6 +34,7 @@ EXIT /B o
 :FetchFile
   setlocal enabledelayedexpansion
   set /A index=0
+  set /A PreviousScreen=0
 
   if exist %tempfile% (
     (for /f "tokens=*" %%a in (%tempfile%) do (
@@ -55,6 +61,7 @@ EXIT /B 0
 
 :: View the current saved database connection credentials
 :ViewDatabaseCredentials
+  set /A PreviousScreen=_ViewDatabaseCredentials
   cls
   echo ----------------------------------------------------------
   echo VIEWING THE [ACTIVE] MONGODB CONNECTION CREDENTIALS
@@ -73,6 +80,7 @@ EXIT /B 0
   set "choice=-1"
   set /p choice="Select option:"
 
+
   (if %choice% EQU 1 (
     GoTo ExportDatabase
   ) else if %choice% EQU 2 (
@@ -89,6 +97,7 @@ EXIT /B 0
 
 :: Set the mongodb database connection credentials
 :SetDatabaseCredentials
+  set /A PreviousScreen=_SetDatabaseCredentials
   cls
   echo ----------------------------------------------------------
   echo MONGODB CONNECTION CREDENTIALS SETUP
@@ -184,7 +193,11 @@ EXIT /B 0
 
     Goto HandleFinish
   ) || (
-    GoTo FetchFile
+    if %PreviousScreen% EQU %_ViewDatabaseCredentials% (
+      GoTo FetchFile
+    ) else if %PreviousScreen% EQU %_SetDatabaseCredentials% (
+      GoTo SetDatabaseCredentials
+    )
   )
 EXIT /B 0
 
