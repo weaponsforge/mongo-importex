@@ -1,8 +1,10 @@
 # mongo-importex
 
 > A one-click windows utility tool that:  
-- Exports `(mongodump)` a mongodb database in binary format.  
-- Imports `(mongorestore)` the exported binary database into a new database. 
+>
+> - Exports `(mongodump)` a mongodb database in binary format.
+> - Imports `(mongorestore)` the exported binary database into a new database.
+> - Drops a specified localhost database.
 
 
 
@@ -35,7 +37,7 @@ Version is not strict but for references, **MongoDB Community Server v4.2.0, OS 
 ## Content
 
 1. **main.bat**  
-Windows batch script to automate switching of MongoDB database credentials for a faster database import `(mongodump)` process.
+Windows batch script to automate switching of MongoDB database credentials for a faster database export `(mongodump)`, import `(mongorestore)` and database drop process.
 
 
 
@@ -54,9 +56,9 @@ Windows batch script to automate switching of MongoDB database credentials for a
 
 4. Press **[6] - Save** to save the previously encoded database credentials for future use and exit to the main screen.
 
-5. Press **[7] Save and Export Database** to save the previously encoded database credentials for future use and start database export `(mongodump)`.
+5. Press **[7] Save and Export Database** to save the previously encoded database credentials and start database export `(mongodump)`.
 
-6. If you already have exported binary databases directories saved in this project's root directory, press **[8] - Save and Import Database** to save the previously encoded database credentials for future use, and to start the  database import `(mongorestore)` of the binary database which you will get to select on the resulting **AVAILABLE DATABASES TO IMPORT** screen.
+6. If you already have exported binary databases directories saved in this project's root directory, press **[8] - Save and Import Database** to save the previously encoded database credentials, and to start the  database import `(mongorestore)` of the binary database which you will get to select on the resulting **AVAILABLE DATABASES TO IMPORT** screen.
 
 
 7. Press **[9] Export Database** to start the database export process using the credentials that have been previously encoded.
