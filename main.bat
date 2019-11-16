@@ -1,6 +1,7 @@
 ::----------------------------------------------------------
 :: Export a mongodb database in binary format.
 :: Import a mongodb database (from mongodump).
+:: Drop a local database.
 :: weaponsforge;20191026
 ::----------------------------------------------------------
 
@@ -34,39 +35,6 @@ GoTo Main
 
   GoTo FetchFile
 EXIT /B o
-
-
-:: Read the temporary file where the current database
-:: connection credentials are saved
-:FetchFile
-  setlocal enabledelayedexpansion
-
-  :: Reset values
-  set /A index=0
-  set /A PreviousScreen=0
-  set /A NextScreen=0
-
-  if exist %tempfile% (
-    (for /f "tokens=*" %%a in (%tempfile%) do (
-      set /A index += 1
-      (if !index! EQU 1 (
-        set MONGO_HOST=%%a
-      ) else if !index! EQU 2 (
-        set MONGO_DB=%%a
-      ) else if !index! EQU 3 (
-        set MONGO_PORT=%%a
-      ) else if !index! EQU 4 (
-        set MONGO_USER=%%a
-      ) else if !index! EQU 5 (
-        set MONGO_PASSWORD=%%a
-      ))
-    ))
-
-    GoTo ViewDatabaseCredentials
-  ) else (
-    GoTo SetDatabaseCredentials
-  )
-EXIT /B 0
 
 
 :: View the current saved database connection credentials
@@ -338,6 +306,49 @@ EXIT /B 0
 EXIT /B 0
 
 
+
+::----------------------------------------------------------
+::  Utility helper scripts
+::----------------------------------------------------------
+
+
+:: Read the temporary file where the current database
+:: connection credentials are saved
+:FetchFile
+  setlocal enabledelayedexpansion
+
+  :: Reset values
+  set /A index=0
+  set /A PreviousScreen=0
+  set /A NextScreen=0
+
+  if exist .dbs (
+    del /f .dbs
+  )
+
+  if exist %tempfile% (
+    (for /f "tokens=*" %%a in (%tempfile%) do (
+      set /A index += 1
+      (if !index! EQU 1 (
+        set MONGO_HOST=%%a
+      ) else if !index! EQU 2 (
+        set MONGO_DB=%%a
+      ) else if !index! EQU 3 (
+        set MONGO_PORT=%%a
+      ) else if !index! EQU 4 (
+        set MONGO_USER=%%a
+      ) else if !index! EQU 5 (
+        set MONGO_PASSWORD=%%a
+      ))
+    ))
+
+    GoTo ViewDatabaseCredentials
+  ) else (
+    GoTo SetDatabaseCredentials
+  )
+EXIT /B 0
+
+
 :: Save (cache) new values for the database credentials
 :SaveData
   set hasblank=false
@@ -348,7 +359,8 @@ EXIT /B 0
   if "%MONGO_PASSWORD%"=="" set hasblank=true
 
   if %hasblank% == true (
-    set /p go=Please check your input. All items must have a value.
+    echo Error saving, please check your input.
+    set /p go=All items must have a value.
     Goto SetDatabaseCredentials
   )
 
@@ -387,11 +399,6 @@ EXIT /B 0
 
   GoTo FetchFile
 EXIT /B 0
-
-
-::----------------------------------------------------------
-::  Utility helper scripts
-::----------------------------------------------------------
 
 
 :: List available databases (on localhost only)
