@@ -120,40 +120,53 @@ EXIT /B 0
   echo.
   set /p choice="Select option:"
 
-  (if %choice% EQU 1 (
-    set /p MONGO_HOST="Enter database host:"
-  ) else if %choice% EQU 2 (
-    set /p MONGO_DB="Enter database name:"
-  ) else if %choice% EQU 3 (
-    set /p MONGO_PORT="Enter port:"
-  ) else if %choice% EQU 4 (
-    set /p MONGO_USER="Enter mongodb user:"
-  ) else if %choice% EQU 5 (
-    set /p MONGO_PASSWORD="Enter password:"
-  ) else if %choice% EQU 6 (
+  :: Encode database credentials
+  if %choice% EQU 1 set /p MONGO_HOST="Enter database host:"
+  if %choice% EQU 2 set /p MONGO_DB="Enter database name:"
+  if %choice% EQU 3 set /p MONGO_PORT="Enter port:"
+  if %choice% EQU 4 set /p MONGO_USER="Enter mongodb user:"
+  if %choice% EQU 5 set /p MONGO_PASSWORD="Enter password:"
+
+  :: Save the current database credentials displayed on this screen
+  if %choice% EQU 6 (
     echo.
     set /p go=[INFO] New data has been saved.
     set /A NextScreen=_ViewDatabaseCredentials
     Goto SaveData
-  ) else if %choice% EQU 7 (
+  )
+
+  :: Export database (and save credentials)
+  if %choice% EQU 7 (
     set /A NextScreen=_ExportDatabase
     echo.
     echo [INFO] New data has been saved.
     GoTo SaveData
-  ) else if %choice% EQU 8 (
+  )
+
+  :: Import database (and save credentials)
+  if %choice% EQU 8 (
     set /A NextScreen = _SelectDatabaseToImport
     echo.
     set /p go=[INFO] New data has been saved.
     GoTo SaveData
-  ) else if %choice% EQU 9 (
+  )
+
+  :: Export database
+  if %choice% EQU 9 (
     echo.
     echo [WARNING] Data has not yet been saved.
     GoTo ExportDatabase
-  ) else if %choice% EQU 10 (
+  )
+
+  :: Import database
+  if %choice% EQU 10 (
     echo.
     set /p go=[WARNING] Data has not yet been saved.
     GoTo SelectDatabaseToImport
-  ) else if %choice% EQU x (
+  )
+
+  :: Exit
+  if %choice% == x (
     if exist %tempfile% (
       Goto FetchFile
     ) else (
@@ -162,7 +175,7 @@ EXIT /B 0
       set /p go=connection credentials [1-5] to cache for future use.
       EXIT /B 0
     )
-  ))
+  )
 
   GoTo SetDatabaseCredentials
 EXIT /B 0
@@ -171,7 +184,7 @@ EXIT /B 0
 :: Export (mongodump) the target database using current db credentials
 :ExportDatabase
   set "continue="
-  set /p continue=Are you ready to start the database export? [Y/n]
+  set /p continue=Are you ready to start the database export? [Y/n]:
     
   :: Export the database given the connection
   echo.%continue% | findstr /C:"Y">nul && (
