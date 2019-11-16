@@ -141,7 +141,7 @@ EXIT /B 0
   ) else if %choice% EQU 6 (
     echo.
     set /p go=[INFO] New data has been saved.
-    set /A NextScreen=_SetDatabaseCredentials
+    set /A NextScreen=_ViewDatabaseCredentials
     Goto SaveData
   ) else if %choice% EQU 7 (
     set /A NextScreen=_ExportDatabase
@@ -289,7 +289,20 @@ EXIT /B 0
 EXIT /B 0
 
 
+:: Save (cache) new values for the database credentials
 :SaveData
+  set hasblank=false
+  if "%MONGO_HOST%"=="" set hasblank=true
+  if "%MONGO_DB%"=="" set hasblank=true
+  if "%MONGO_PORT%"=="" set hasblank=true
+  if "%MONGO_USER%"=="" set hasblank=true
+  if "%MONGO_PASSWORD%"=="" set hasblank=true
+
+  if %hasblank% == true (
+    set /p go=Please check your input. All items must have a value.
+    Goto SetDatabaseCredentials
+  )
+
   :: Delete cache
   if exist %tempfile% (
     del %tempfile%
@@ -308,6 +321,8 @@ EXIT /B 0
     GoTo SelectDatabaseToImport
   ) else if %NextScreen% EQU %_SetDatabaseCredentials% (
     GoTo SetDatabaseCredentials
+  ) else if %NextScreen% EQU %_ViewDatabaseCredentials% (
+    GoTo ViewDatabaseCredentials
   )
 EXIT /B 0
 
