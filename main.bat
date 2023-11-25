@@ -66,7 +66,10 @@ EXIT /B o
   if %choice% EQU 3 Goto DeleteDatabase
   if %choice% EQU 4 Goto SetDatabaseCredentials
   if %choice% EQU 5 Goto ResetData
-  if %choice% == x EXIT /B 0
+  if %choice% == x (
+    EXIT /B 0
+  )
+
   Goto ViewDatabaseCredentials
 EXIT /B 0
 
