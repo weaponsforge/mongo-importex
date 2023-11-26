@@ -6,6 +6,13 @@
 > - Imports `(mongorestore)` the exported binary database into a new database.
 > - Drops a specified localhost database.
 
+### Table of Contents
+
+- [Dependencies](#dependencies)
+- [Content](#content)
+- [Usage and Installation](#usage-and-installation)
+- [Troubleshooting](#troubleshooting)
+
 
 
 ### Dependencies
@@ -64,7 +71,7 @@ Version is not strict, but for reference, the project used **MongoDB Community S
 Windows batch script to automate switching of MongoDB database credentials for a faster database export `(mongodump)`, import `(mongorestore)` and database drop process.
 
 
-## Usage
+## Usage and Installation
 
 1. Clone this repository.  
 `git clone https://github.com/weaponsforge/mongo-importex.git`
@@ -81,23 +88,29 @@ Windows batch script to automate switching of MongoDB database credentials for a
 	| 4 | Enter user name | MongoDB user name |
 	| 5 | Enter password | MongoDB user password |
 	| 6 | Enter mongo shell | The available and active MongoDB shell. Choose:<br> - `mongo` (for MongoDB v4.2.0 or lower versions) <br>- `mongosh` (for MongoDB v4.4.0 or higher versions)|
-	| 7 | Save | Saves the encoded database credentials for future use to a `.env` and exit to the main screen. |
-	| 8 | Save and Export Database | Saves the mongodb settings to a `.env` file and starts the Export Database process. |
-	| 9 | Save and Import Database | Saves the mongodb settings to a `.env` file and starts to the Import Database process. |
-	| 10 | Export Database | Exports (`mongodump`) Exports the database defined in the MongoDB Connection Credentials Setup to a database in binary JSON format.<br> - **NOTE:** Choosing this option will NOT save recent updates made to the database credentials. |
-	| 11 | Import Database | Imports (`mongorestore`) a binary database to the database defined in the MongoDB Connection Credentials settings.<br>It expects to find binary database contents in subdirectories relative to the script, similar to the output of the **[10] Export Database option**.<br>**NOTE:** Choosing this option will NOT save recent updates made to the database credentials. |
+	| 7 | Save | Saves the encoded database credentials for future use to a `.env` file and exit to the main screen. |
+	| 8 | Save and Export Database | Saves the mongodb settings to a `.env` file and starts the **Export Database** process. |
+	| 9 | Save and Import Database | Saves the mongodb settings to a `.env` file and starts to the **Import Database** process. |
+	| 10 | Export Database | Exports (`mongodump`) the database defined in the MongoDB Connection Credentials Setup to a database in binary JSON format.<br> - **NOTE:** Choosing this option will NOT save recent updates made to the database credentials.<br>- Type `"Y"` and press ENTER if you want to use the `"mongo+srv://"` SRV Connection String.<br>- Type `"n"` and press ENTER if you want to use the `"mongo://"` Standard Connection String. |
+	| 11 | Import Database | Imports (`mongorestore`) a binary database to the database defined in the MongoDB Connection Credentials settings.<br>It expects to find binary database contents in subdirectories relative to the script, similar to the output of the **[10] Export Database option**.<br>- **NOTE:** Choosing this option will NOT save recent updates made to the database credentials.<br>- Type `"Y"` and press ENTER if you want to use the `"mongo+srv://"` SRV Connection String.<br>- Type `"n"` and press ENTER if you want to use the `"mongo://"` Standard Connection String. |
 	| x | Exit | Exit the script. |
 
-4. The **VIEWING THE [ACTIVE] MONGODB CONNECTION CREDENTIALS** screen provides quick links for database import, export, drop, and database credentials updating, which will be accessible after saving the initial database credentials required from the **MONGODB CONNECTION CREDENTIALS SETUP**.
+4. The **VIEWING THE [ACTIVE] MONGODB CONNECTION CREDENTIALS** screen provides quick links for database import, export, drop, and database credentials updating, which will be accessible after saving the initial database credentials required from the **MONGODB CONNECTION CREDENTIALS SETUP**.<br>
+
+	The **Export Database**, **Import Database**, and **List Databases** options will prompt selecting the `"mongo+srv://"` SRV Connection String. Type `"Y"` or `"n"` and press ENTER when prompted.
+	- Type `"Y"` and press ENTER if you want to use the `"mongo+srv://"` SRV Connection String.
+	- Type `"n"` and press ENTER if you want to use the `"mongo://"` Standard Connection String.
 
 	| NO. | Prompt | Description |
 	|---|---|---|
 	| 1 | Export Database | Exports (`mongodump`) the database defined in the MongoDB Connection Credentials Setup to a binary JSON format database. |
 	| 2 | Import Database | Imports (`mongorestore`) the database defined in the MongoDB Connection Credentials settings to a local binary JSON format database relative to the script's location |
 	| 3 | Drop Database | It deletes a database defined in the MongoDB connection credentials. Currently available only for localhost MongoDB. |
-	| 4 | Update Connection Credentials | Displays the **MONGODB CONNECTION CREDENTIALS SETUP** screen for editing the stored database connection details. |
-	| 5 | Reset | Resets the database conection details |
-	| 6 | Exit | Exit the script. |
+	| 4 | List Databases | Lists the available databases from the defined MongoDB connection credentials. |
+	| 5 | List Local Databases | Lists the available localhost databases. |
+	| 6 | Update Connection Credentials | Displays the **MONGODB CONNECTION CREDENTIALS SETUP** screen for editing the stored database connection details. |
+	| 7 | Reset | Resets the database conection details |
+	| x | Exit | Exit the script. |
 
 
 ## Troubleshooting

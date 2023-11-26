@@ -21,6 +21,12 @@ GoTo Main
   :: Legacy MongoDB uses "mongo" shell, newer versions use "mongosh"
   set "MONGO_SHELL="
 
+  :: Flag to use the "mongodb+srv://" SRV Connection String URI
+  set "USESRV="
+
+  :: User authentication database if using the Standard Connection String "mongo://"
+  set "AUTHSOURCE="
+
   :: Screen ID's
   set /A _ViewDatabaseCredentials=1
   set /A _SetDatabaseCredentials=2
@@ -58,8 +64,10 @@ EXIT /B 0
   echo [1] Export Database
   echo [2] Import Database
   echo [3] Drop Database
-  echo [4] Update Connection Credentials
-  echo [5] Reset
+  echo [4] List Databases
+  echo [5] List Local Databases
+  echo [6] Update Connection Credentials
+  echo [7] Reset
   echo [x] Exit
   set "choice=-1"
   echo.
@@ -68,8 +76,16 @@ EXIT /B 0
   if %choice% EQU 1 GoTo ExportDatabase
   if %choice% EQU 2 GoTo SelectDatabaseToImport
   if %choice% EQU 3 Goto DeleteDatabase
-  if %choice% EQU 4 Goto SetDatabaseCredentials
-  if %choice% EQU 5 Goto ResetData
+  if %choice% EQU 4 (
+    set /A NextScreen=_ViewDatabaseCredentials
+    Goto ShowConnectionDatabases
+  )
+  if %choice% EQU 5 (
+    set /A NextScreen=_ViewDatabaseCredentials
+    Goto ShowDatabases
+  )
+  if %choice% EQU 6 Goto SetDatabaseCredentials
+  if %choice% EQU 7 Goto ResetData
   if %choice% == x EXIT /B 0
 
   Goto ViewDatabaseCredentials
@@ -79,18 +95,17 @@ EXIT /B 0
 :: Export (mongodump) the target database using current db credentials
 :ExportDatabase
   set "continue="
-  set "usesrv="
   set /p continue=Are you ready to start the database export? [Y/n]:
 
   (if "%continue%" == "Y" (
-    set /p usesrv=Do you want to use the mongodb+srv:// connection string? [Y/n]:
+    CALL :ConfirmUseSrv
   ))
 
   :: Export the database given the connection
   echo.%continue% | findstr /C:"Y">nul && (
     echo Starting database export...
 
-    echo.%usesrv% | findstr /C:"Y">nul && (
+    echo.%USESRV% | findstr /C:"Y">nul && (
       mongodump --uri mongodb+srv://%MONGO_USER%:%MONGO_PASSWORD%@%MONGO_HOST%/%MONGO_DB% -o %cd%
     ) || (
       (if %MONGO_PORT% EQU 20717 (
@@ -157,19 +172,17 @@ EXIT /B 0
   echo  - Password: %MONGO_PASSWORD%
 
   set "con="
-  set "usesrv="
-
   echo Are you sure you want to import [%db%]
   set /p con=to the above database server? [Y/n]:
 
   (if "%con%" == "Y" (
-    set /p usesrv=Do you want to use the mongodb+srv:// connection string? [Y/n]:
+    CALL :ConfirmUseSrv
   ))
 
   echo.%con% | findstr /C:"Y">nul && (
     echo Starting database import...
 
-    echo.%usesrv% | findstr /C:"Y">nul && (
+    echo.%USESRV% | findstr /C:"Y">nul && (
       mongorestore --uri mongodb+srv://%MONGO_USER%:%MONGO_PASSWORD%@%MONGO_HOST%/%MONGO_DB% %cd%\%db%
     ) || (
       (if %MONGO_PORT% EQU 20717 (
@@ -431,16 +444,53 @@ EXIT /B 0
 EXIT /B 0
 
 
-:: List available databases (on localhost only)
+:: Lists available databases (on localhost only)
 :ShowDatabases
   %MONGO_SHELL% --eval "printjson(db.adminCommand( { listDatabases: 1, nameOnly:true } ))" > .dbs
 
   echo.
   echo ----------------------------------------------------------
+  echo Available LOCAL databases (on localhost only):
+  findstr /C:name .dbs
+
+  set /p go=Press enter to continue...
+  GoTo RenderNextScreen
+EXIT /B 0
+
+
+:: Lists available databases from the defined active connection credentials
+:: - when using the SRV Connection String (mongo+srv://) or,
+:: - when using the Standalone Connection String (mongo://) if prompted for an authentication database
+:ShowConnectionDatabases
+  CALL :ConfirmUseSrv
+
+  :: Prompt for an authentication database if not using "mongo+srv://"
+  (if NOT "%USESRV%" == "Y" (
+    CALL :SetAuthSource
+
+    echo.!AUTHSOURCE! | findstr [A-Za-z]>nul && (
+      echo Selected [!AUTHSOURCE!] for the authentication database.
+    ) || (
+      echo.
+      echo Error: Connecting using the standard connection string
+      set /p go=requires the user's authentication database. Try again.
+      GoTo RenderNextScreen
+    )
+  ))
+
+  (if "%USESRV%" == "Y" (
+    %MONGO_SHELL% mongodb+srv://%MONGO_USER%:%MONGO_PASSWORD%@%MONGO_HOST% --eval "printjson(db.adminCommand( { listDatabases: 1, nameOnly:true } ))" > .dbs
+  ) else (
+    %MONGO_SHELL% mongodb://%MONGO_USER%:%MONGO_PASSWORD%@%MONGO_HOST%:%MONGO_PORT%/?authSource=!AUTHSOURCE! --eval "printjson(db.adminCommand( { listDatabases: 1, nameOnly:true } ))" > .dbs
+  ))
+
+  echo.
+  echo ----------------------------------------------------------
+  echo Host: %MONGO_HOST%
   echo Available databases:
   findstr /C:name .dbs
 
-  set /p go=Press enter to cotinue...
+  set /p go=Press enter to continue...
   GoTo RenderNextScreen
 EXIT /B 0
 
@@ -478,4 +528,19 @@ EXIT /B 0
   ) else if %NextScreen% EQU %_ViewDatabaseCredentials% (
     GoTo ViewDatabaseCredentials
   )
+EXIT /B 0
+
+
+:: Prompt to confirm using the "mongodb+srv://" URI connection string
+:ConfirmUseSrv
+  echo.
+  set "USESRV="
+  echo Do you want to use the mongodb+srv:// connection string?
+  set /p USESRV=Tip: select mongodb+srv:// when interacting with Atlas databases [Y/n]:
+EXIT /B 0
+
+:SetAuthSource
+  echo.
+  set "AUTHSOURCE="
+  set /p AUTHSOURCE="Enter the user authentication database:"
 EXIT /B 0
