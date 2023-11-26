@@ -13,32 +13,55 @@
 1. **Windows 10 OS 64-bit**
 
 2. **MongoDB**  
-Version is not strict but for references, **MongoDB Community Server v4.2.0, OS Windows x86 x64** was used for this project's local installation.    
+Version is not strict, but for reference, the project used **MongoDB Community Server v4.2.0, OS Windows x86 x64** for its INITIAL local installation in 2019. Its shell must be available globally from the command line.
 
 		MongoDB shell version v4.2.0
 		git version: a4b751dcf51dd249c5865812b390cfd1c0129c30
 		allocator: tcmalloc
 		modules: none
 		build environment:
-		    distmod: 2012plus
-		    distarch: x86_64
-		    target_arch: x86_64
+		  distmod: 2012plus
+		  distarch: x86_64
+		  target_arch: x86_64
 
+	The project used **MongoDB Community Server v7.0.3, OS Windows x86 x64**, available on [the link](https://www.mongodb.com/try/download/community) for its LATEST local installation in 2023. This MongoDB version requires a separate installation of the MongoDB Shell and the MongoDB Database Tools (mongodump, mongorestore, etc). Its shell and tools must be available globally from the command line.
 
-3. Access to an [mlab](https://mlab.com/) database (or any other mongodb database sources).  
+		MongoDB (mongod) version v7.0.3
+		git version: b96efb7e0cf6134d5938de8a94c37cec3f22cff4
+		allocator: tcmalloc
+		modules: none
+		build environment:
+			distmod: windows
+			distarch: x86_64
+			target_arch: x86_64
 
-	    host: localhost
-	    port: 27017
+	**MongoDB Shell** [[link]](https://www.mongodb.com/try/download/shell)
+
+		MongoDB Shell v2.0.2
+		Platform: Windows x64 (10+)
+		Package: msi
+
+	**MongoDB Command Line Database Tools** (MongoDB Database Tools) [[link]](https://www.mongodb.com/try/download/database-tools)
+
+		MongoDB Database Tools v100.9.3
+		Platform: Windows x86_64
+		Package: msi
+
+3. Access to an [Atlas](https://www.mongodb.com/atlas) database (or any other mongodb database sources).  
+
+		host: localhost
+		port: 27017
 		user: tester
 		password: tester
-
+		mongo shell: 
+		- mongo (for MongoDB v4.2.0 or lower versions)
+		- mongosh (for MongoDB v4.4.0 or higher versions)
 
 
 ## Content
 
 1. **main.bat**  
 Windows batch script to automate switching of MongoDB database credentials for a faster database export `(mongodump)`, import `(mongorestore)` and database drop process.
-
 
 
 ## Usage
@@ -48,44 +71,43 @@ Windows batch script to automate switching of MongoDB database credentials for a
 
 2. Click to run **main.bat**.
 
-3. The **MONGODB CONNECTION CREDENTIALS SETUP** screen will appear on the script's first-time run. Select the following options to encode the following required fields:  
-	- **[1]** - database host name
-	- **[2]** - database name
-	- **[3]** - database user
-	- **[4]** - database user's password
+3. The **MONGODB CONNECTION CREDENTIALS SETUP** screen will appear on the script's first run. Select the following options to encode the following required fields:  
 
-4. Press **[6] - Save** to save the previously encoded database credentials for future use and exit to the main screen.
+	| NO. | Prompt | Description |
+	|---|---|---|
+	| 1 | Enter database host | MongoDB host name |
+	| 2 | Enter database name | MongoDB database name |
+	| 3 | Database port | MongoDB port number name. Uses 27017 by default. |
+	| 4 | Enter user name | MongoDB user name |
+	| 5 | Enter password | MongoDB user password |
+	| 6 | Enter mongo shell | The available and active MongoDB shell. Choose:<br> - `mongo` (for MongoDB v4.2.0 or lower versions) <br>- `mongosh` (for MongoDB v4.4.0 or higher versions)|
+	| 7 | Save | Saves the encoded database credentials for future use to a `.env` and exit to the main screen. |
+	| 8 | Save and Export Database | Saves the mongodb settings to a `.env` file and starts the Export Database process. |
+	| 9 | Save and Import Database | Saves the mongodb settings to a `.env` file and starts to the Import Database process. |
+	| 10 | Export Database | Exports (`mongodump`) Exports the database defined in the MongoDB Connection Credentials Setup to a database in binary JSON format.<br> - **NOTE:** Choosing this option will NOT save recent updates made to the database credentials. |
+	| 11 | Import Database | Imports (`mongorestore`) a binary database to the database defined in the MongoDB Connection Credentials settings.<br>It expects to find binary database contents in subdirectories relative to the script, similar to the output of the **[10] Export Database option**.<br>**NOTE:** Choosing this option will NOT save recent updates made to the database credentials. |
+	| x | Exit | Exit the script. |
 
-5. Press **[7] Save and Export Database** to save the previously encoded database credentials and start database export `(mongodump)`.
+4. The **VIEWING THE [ACTIVE] MONGODB CONNECTION CREDENTIALS** screen provides quick links for database import, export, drop, and database credentials updating, which will be accessible after saving the initial database credentials required from the **MONGODB CONNECTION CREDENTIALS SETUP**.
 
-6. If you already have exported binary databases directories saved in this project's root directory, press **[8] - Save and Import Database** to save the previously encoded database credentials, and to start the  database import `(mongorestore)` of the binary database which you will get to select on the resulting **AVAILABLE DATABASES TO IMPORT** screen.
-
-
-7. Press **[9] Export Database** to start the database export process using the credentials that have been previously encoded.
-	> **NOTE:** Any updates made to the database credentials will NOT be saved if this option is chosen.
-
-8. Press **[10] Import Database** to  select a binary database to import from the **AVAILABLE DATABASES TO IMPORT** screen. A list of exported binary database directories will be listed.
-	> **NOTE:** Any updates made to the database credentials will NOT be saved if this option is chosen.
-	- Enter the name of the database you want to import, or
-	- Press **"x"** to exit.
-
-9. Wait for the database export `(mongodump)` or import `(mongorestore)` process to finish.
-
-10. Quick links for database import, export, drop and database credentials updating are available in the **VIEWING THE [ACTIVE] MONGODB CONNECTION CREDENTIALS** screen, which will be accessible after saving the initial database credentials required from **# 3**.
-	- **[1] - Export Database**
-	- **[2] - Import Database**
-	- **[3] - Drop Database**
-	- **[4] - Update Connection Credentials**
-	- **[5] - Reset**
-	- **[x] - Exit**
-
+	| NO. | Prompt | Description |
+	|---|---|---|
+	| 1 | Export Database | Exports (`mongodump`) the database defined in the MongoDB Connection Credentials Setup to a binary JSON format database. |
+	| 2 | Import Database | Imports (`mongorestore`) the database defined in the MongoDB Connection Credentials settings to a local binary JSON format database relative to the script's location |
+	| 3 | Drop Database | It deletes a database defined in the MongoDB connection credentials. Currently available only for localhost MongoDB. |
+	| 4 | Update Connection Credentials | Displays the **MONGODB CONNECTION CREDENTIALS SETUP** screen for editing the stored database connection details. |
+	| 5 | Reset | Resets the database conection details |
+	| 6 | Exit | Exit the script. |
 
 
 ## Troubleshooting
 
-1. MonogoDB databases that are to be accessed using this tool are expected to have been properly set-up with users and passwords.
-
-2. If the **export database** process takes too long to finish, close this tool and re-check if the database credentials haven been encoded properly. 
+1. This script expects to access properly configured MonogoDB databases with existing users and passwords.
+2. The script expects a properly set up and configured MongoDB installation.
+   - The `"mongod,"` `"mongodump,"` `"mongorestore,"` `"mongosh"` (for MongoDB v4.4 or later versions), and `"mongo"` (for MongoDB v4.2 or earlier versions) MongoDB shell commands should be globally accessible from the command prompt.
+2. If the **Export Database** process takes too long to finish:
+   - Terminate and re-run the script.
+   - Re-check if the correct database credentials are available in the **MONGODB CONNECTION CREDENTIALS SETUP** screen.
 
 
 20191116
