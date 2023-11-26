@@ -54,8 +54,8 @@ Version is not strict, but for reference, the project used **MongoDB Community S
 		user: tester
 		password: tester
 		mongo shell: 
-			- mongo (for MongoDB v4.2.0 or lower versions)
-			- mongosh (for MongoDB v4.4.0 or higher versions)
+		- mongo (for MongoDB v4.2.0 or lower versions)
+		- mongosh (for MongoDB v4.4.0 or higher versions)
 
 
 ## Content
@@ -107,7 +107,7 @@ Windows batch script to automate switching of MongoDB database credentials for a
    - The `"mongod,"` `"mongodump,"` `"mongorestore,"` `"mongosh"` (for MongoDB v4.4 or later versions), and `"mongo"` (for MongoDB v4.2 or earlier versions) MongoDB shell commands should be globally accessible from the command prompt.
 2. If the **Export Database** process takes too long to finish:
    - Terminate and re-run the script.
-	 - Re-check if the correct database credentials are available in the **MONGODB CONNECTION CREDENTIALS SETUP** screen.
+   - Re-check if the correct database credentials are available in the **MONGODB CONNECTION CREDENTIALS SETUP** screen.
 
 
 20191116
