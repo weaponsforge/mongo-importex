@@ -1,3 +1,4 @@
 .tempfile
+.env
 .dbs
 */
