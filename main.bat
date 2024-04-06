@@ -66,8 +66,9 @@ EXIT /B 0
   echo [3] Drop Database
   echo [4] List Databases
   echo [5] List Local Databases
-  echo [6] Update Connection Credentials
-  echo [7] Reset
+  echo [6] Create Local Database and User
+  echo [7] Update Connection Credentials
+  echo [8] Reset
   echo [x] Exit
   set "choice=-1"
   echo.
@@ -84,8 +85,9 @@ EXIT /B 0
     set /A NextScreen=_ViewDatabaseCredentials
     Goto ShowDatabases
   )
-  if %choice% EQU 6 Goto SetDatabaseCredentials
-  if %choice% EQU 7 Goto ResetData
+  if %choice% EQU 6 Goto CreateDatabaseAndUser
+  if %choice% EQU 7 Goto SetDatabaseCredentials
+  if %choice% EQU 8 Goto ResetData
   if %choice% == x EXIT /B 0
 
   Goto ViewDatabaseCredentials
@@ -342,6 +344,76 @@ EXIT /B 0
   )
 
   GoTo SetDatabaseCredentials
+EXIT /B 0
+
+:: Creates a local database and local database user
+:CreateDatabaseAndUser
+  setlocal enabledelayedexpansion
+
+  cls
+  echo ----------------------------------------------------------
+  echo CREATE DATABASE AND USER
+  echo ----------------------------------------------------------
+
+  set "databaseName="
+  set "databaseUser="
+  set "userPassword="
+
+  set /p databaseName="Enter the database name:"
+  set /p databaseUser="Enter the database user:"
+  set /p userPassword="Enter the database user password:"
+  echo.
+
+  echo Do you want to create the database and user
+  echo on host [%MONGO_HOST%]?
+  echo  - Database: %databaseName%
+  echo  - User: %databaseUser%
+  echo  - Passsword: %userPassword%
+  echo.
+
+  set "continue=Y"
+  echo Press enter to continue
+  set /p continue=Type "n" and press enter to cancel:
+
+  if %continue% EQU n (
+    set "retry=Y"
+    set /p retry="Retry? [Y/n]:"
+
+    if /i "!retry!"=="n" (
+      GoTo ViewDatabaseCredentials
+    ) else (
+      GoTo CreateDatabaseAndUser
+    )
+  ) else (
+    (if %MONGO_HOST% EQU localhost (
+      echo Creating local database and user...
+
+      %MONGO_SHELL% !databaseName! --eval "db.createCollection('_!databaseName!')"
+      %MONGO_SHELL% !databaseName! --eval "db.createUser({user: '!databaseUser!' , pwd: '!userPassword!', roles: [{ role: 'readWrite', db: '!databaseName!' }]})"
+
+      echo Success!
+      set /A NextScreen=_ViewDatabaseCredentials
+      GoTo ShowDatabases
+    ) else (
+      echo Creating remote database...
+
+      %MONGO_SHELL% mongodb+srv://%MONGO_USER%:%MONGO_PASSWORD%@%MONGO_HOST%/!databaseName! --eval "db.createCollection('_!databaseName!'); db.adminCommand({ listDatabases: 1, nameOnly:true })" > .dbs
+
+      echo.
+      echo Success!
+      echo [NOTE]: Creating database users on remote hosts are currently not supported.
+      echo [NOTE]: Skipping creating remote database user...
+
+      echo.
+      echo ----------------------------------------------------------
+      echo Host: %MONGO_HOST%
+      echo Available databases:
+      findstr /C:name .dbs
+
+      set /p go=Press enter to continue...
+      GoTo ViewDatabaseCredentials
+    ))
+  )
 EXIT /B 0
 
 
