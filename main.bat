@@ -489,6 +489,8 @@ EXIT /B 0
 EXIT /B 0
 
 
+:: Starts a mongodb shell (mongosh) that connects to a local or remote database
+:: using the stored database connection credentials file
 :EnterMongoShell
   cls
   echo ----------------------------------------------------------
