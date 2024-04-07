@@ -35,6 +35,8 @@ GoTo Main
   set /A PreviousScreen=0
   set /A NextScreen=0
 
+  set "TEMP_USERS_FILE=_users.txt"
+  set "LOCAL_USERS_FILE=users.txt"
   set ENV_FILE=%cd%\.env
   echo %ENV_FILE%
 
@@ -42,6 +44,7 @@ GoTo Main
     del /f .dbs
   )
 
+  CALL :DeleteLocalUsersFiles
   GoTo FetchFile
 EXIT /B 0
 
@@ -66,9 +69,11 @@ EXIT /B 0
   echo [3] Drop Database
   echo [4] List Databases
   echo [5] List Local Databases
-  echo [6] Create Local Database and User
-  echo [7] Update Connection Credentials
-  echo [8] Reset
+  echo [6] Local DB User: Create
+  echo [7] Local DB User: Delete
+  echo [8] Local DB User: List
+  echo [9] Update Connection Credentials
+  echo [10] Reset
   echo [x] Exit
   set "choice=-1"
   echo.
@@ -85,9 +90,11 @@ EXIT /B 0
     set /A NextScreen=_ViewDatabaseCredentials
     Goto ShowDatabases
   )
-  if %choice% EQU 6 Goto CreateDatabaseAndUser
-  if %choice% EQU 7 Goto SetDatabaseCredentials
-  if %choice% EQU 8 Goto ResetData
+  if %choice% EQU 6 Goto CreateLocalDatabaseUser
+  if %choice% EQU 7 Goto DeleteLocalDatabaseUser
+  if %choice% EQU 8 Goto ShowLocalDatabaseUsers
+  if %choice% EQU 9 Goto SetDatabaseCredentials
+  if %choice% EQU 10 Goto ResetData
   if %choice% == x EXIT /B 0
 
   Goto ViewDatabaseCredentials
@@ -248,6 +255,8 @@ EXIT /B 0
 
       echo. | findstr /C:%del% .dbs && (
         %MONGO_SHELL% %del% --eval "db.dropDatabase()"
+        CALL :DeleteLocalDatabaseUsers %del%
+
         set /A NextScreen=_ViewDatabaseCredentials
         GoTo ShowDatabases
       ) || (
@@ -346,13 +355,15 @@ EXIT /B 0
   GoTo SetDatabaseCredentials
 EXIT /B 0
 
-:: Creates a local database and local database user
-:CreateDatabaseAndUser
+
+:: Creates a local database user for a local database
+:: The local database may or may not yet exist
+:CreateLocalDatabaseUser
   setlocal enabledelayedexpansion
 
   cls
   echo ----------------------------------------------------------
-  echo CREATE DATABASE AND USER
+  echo CREATE LOCAL DATABASE USER
   echo ----------------------------------------------------------
 
   set "databaseName="
@@ -364,8 +375,8 @@ EXIT /B 0
   set /p userPassword="Enter the database user password:"
   echo.
 
-  echo Do you want to create the database and user
-  echo on host [%MONGO_HOST%]?
+  echo Do you want to create a local database user
+  echo on host [%MONGO_HOST%], database [%databaseName%]?
   echo  - Database: %databaseName%
   echo  - User: %databaseUser%
   echo  - Passsword: %userPassword%
@@ -382,37 +393,97 @@ EXIT /B 0
     if /i "!retry!"=="n" (
       GoTo ViewDatabaseCredentials
     ) else (
-      GoTo CreateDatabaseAndUser
+      GoTo CreateLocalDatabaseUser
     )
   ) else (
     (if %MONGO_HOST% EQU localhost (
-      echo Creating local database and user...
-
-      %MONGO_SHELL% !databaseName! --eval "db.createCollection('_!databaseName!')"
+      echo Creating local database user [!databaseUser!]...
       %MONGO_SHELL% !databaseName! --eval "db.createUser({user: '!databaseUser!' , pwd: '!userPassword!', roles: [{ role: 'readWrite', db: '!databaseName!' }]})"
 
       echo Success!
-      set /A NextScreen=_ViewDatabaseCredentials
-      GoTo ShowDatabases
-    ) else (
-      echo Creating remote database...
-
-      %MONGO_SHELL% mongodb+srv://%MONGO_USER%:%MONGO_PASSWORD%@%MONGO_HOST%/!databaseName! --eval "db.createCollection('_!databaseName!'); db.adminCommand({ listDatabases: 1, nameOnly:true })" > .dbs
-
-      echo.
-      echo Success!
-      echo [NOTE]: Creating database users on remote hosts are currently not supported.
-      echo [NOTE]: Skipping creating remote database user...
-
-      echo.
-      echo ----------------------------------------------------------
-      echo Host: %MONGO_HOST%
-      echo Available databases:
-      findstr /C:name .dbs
+      CALL :ListLocalDatabaseUsers !databaseName!
 
       set /p go=Press enter to continue...
       GoTo ViewDatabaseCredentials
     ))
+  )
+EXIT /B 0
+
+
+:: Deletes all database users of a given local database
+:DeleteLocalDatabaseUsers
+  setlocal enabledelayedexpansion
+  set "dbName=%~1"
+
+  CALL :ListLocalDatabaseUsers %dbName%
+
+  if exist %LOCAL_USERS_FILE% (
+    (for /f "tokens=*" %%a in (%LOCAL_USERS_FILE%) do (
+      for /f "tokens=2 delims='" %%u in ("%%a") do (
+        echo Deleting user: %%u
+        %MONGO_SHELL% %dbName% --eval "db.dropUser('%%u')"
+      )
+    ))
+  )
+
+  CALL :DeleteLocalUsersFiles
+  set /p go=Press enter to continue...
+EXIT /B 0
+
+
+:: Lists the local database users of a given local database
+:ListLocalDatabaseUsers
+  setlocal enabledelayedexpansion
+  set "dbName=%~1"
+
+  CALL :DeleteLocalUsersFiles
+
+  %MONGO_SHELL% %dbName% --eval "db.getUsers()" > %TEMP_USERS_FILE%
+  findstr /C:user: %TEMP_USERS_FILE% > %LOCAL_USERS_FILE%
+
+  if exist %LOCAL_USERS_FILE% (
+    echo.
+    echo ----------------------------------------------------------
+    echo Available LOCAL users on localhost database [%dbName%]:
+
+    (for /f "tokens=*" %%a in (%LOCAL_USERS_FILE%) do (
+      for /f "tokens=2 delims='" %%u in ("%%a") do (
+        echo  - User: %%u
+      )
+    ))
+  )
+EXIT /B 0
+
+
+:: Prompt local database name for listing its local users
+:ShowLocalDatabaseUsers
+  cls
+  echo ----------------------------------------------------------
+  echo LIST LOCAL DATABASE USERS
+  echo ----------------------------------------------------------
+
+  set "databaseName="
+  set /p databaseName="Enter the database name:"
+  echo.
+
+  set "continue=Y"
+  echo Press enter to continue
+  set /p continue=Type "n" and press enter to cancel:
+
+  if %continue% EQU n (
+    set "retry=Y"
+    set /p retry="Retry? [Y/n]:"
+
+    if /i "!retry!"=="n" (
+      GoTo ViewDatabaseCredentials
+    ) else (
+      GoTo ShowLocalDatabaseUsers
+    )
+  ) else (
+    CALL :ListLocalDatabaseUsers !databaseName!
+
+    set /p go=Press enter to continue...
+    GoTo ViewDatabaseCredentials
   )
 EXIT /B 0
 
@@ -615,4 +686,16 @@ EXIT /B 0
   echo.
   set "AUTHSOURCE="
   set /p AUTHSOURCE="Enter the user authentication database:"
+EXIT /B 0
+
+
+:: Deletes the local database users list file
+:DeleteLocalUsersFiles
+  if exist %LOCAL_USERS_FILE% (
+    del /f %LOCAL_USERS_FILE%
+  )
+
+  if exist %TEMP_USERS_FILE% (
+    del /f %TEMP_USERS_FILE%
+  )
 EXIT /B 0

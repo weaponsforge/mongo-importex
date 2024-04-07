@@ -108,9 +108,11 @@ Windows batch script to automate switching of MongoDB database credentials for a
 	| 3 | Drop Database | It deletes a database defined in the MongoDB connection credentials. Currently available only for localhost MongoDB. |
 	| 4 | List Databases | Lists the available databases from the defined MongoDB connection credentials. |
 	| 5 | List Local Databases | Lists the available localhost databases. |
-	| 6 | Create Local Database and User | Creates a local database and a local user and password associated with the local database.<br>It also creates an empty collection using the database name with a `"_"` prefix i.e., `"_mydatabase"` |
-	| 7 | Update Connection Credentials | Displays the **MONGODB CONNECTION CREDENTIALS SETUP** screen for editing the stored database connection details. |
-	| 8 | Reset | Resets the database conection details |
+	| 6 | Local DB User: Create | Creates a local user for a local database that may or may not yet exist. |
+	| 7 | Local DB User: Delete | Deletes a local user from a local database that may or may not yet exist. |
+	| 6 | Local DB User: List | Lists all local user/s of a local database that may or may not yet exist. |
+	| 9 | Update Connection Credentials | Displays the **MONGODB CONNECTION CREDENTIALS SETUP** screen for editing the stored database connection details. |
+	| 10 | Reset | Resets the database conection details |
 	| x | Exit | Exit the script. |
 
 
