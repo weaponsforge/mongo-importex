@@ -35,6 +35,8 @@ GoTo Main
   set /A PreviousScreen=0
   set /A NextScreen=0
 
+  :: Local temporary files
+  set "LOG_FILE=log.txt"
   set "TEMP_USERS_FILE=_users.txt"
   set "LOCAL_USERS_FILE=users.txt"
   set ENV_FILE=%cd%\.env
@@ -414,6 +416,34 @@ EXIT /B 0
 EXIT /B 0
 
 
+:: Deletes a local database user from a local database
+:DeleteLocalDatabaseUser
+  cls
+  echo ----------------------------------------------------------
+  echo DELETE A LOCAL DATABASE USER
+  echo ----------------------------------------------------------
+  set "databaseName="
+  set "databaseUser="
+
+  set /p databaseName="Enter the database name:"
+  set /p databaseUser="Enter the database user:"
+  echo.
+
+  %MONGO_SHELL% %databaseName% --eval "db.dropUser('%databaseUser%')" > %LOG_FILE%
+
+  findstr /C:"ok:" %LOG_FILE% > nul
+
+  if %errorlevel% equ 0 (
+    echo Success! User [%databaseUser%] deleted.
+  ) else (
+    echo Error deleting user
+  )
+
+  set /p go=Press enter to continue...
+  GoTo ViewDatabaseCredentials
+EXIT /B 0
+
+
 :: Deletes all database users of a given local database
 :DeleteLocalDatabaseUsers
   setlocal enabledelayedexpansion
@@ -741,5 +771,9 @@ EXIT /B 0
 
   if exist %TEMP_USERS_FILE% (
     del /f %TEMP_USERS_FILE%
+  )
+
+  if exist %LOG_FILE% (
+    del /f %LOG_FILE%
   )
 EXIT /B 0
