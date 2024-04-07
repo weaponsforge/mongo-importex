@@ -19,7 +19,7 @@ GoTo Main
   set "MONGO_PASSWORD="
 
   :: Legacy MongoDB uses "mongo" shell, newer versions use "mongosh"
-  set "MONGO_SHELL="
+  set "MONGO_SHELL=mongosh"
 
   :: Flag to use the "mongodb+srv://" SRV Connection String URI
   set "USESRV="
@@ -51,6 +51,8 @@ EXIT /B 0
 
 :: View the current saved database connection credentials
 :ViewDatabaseCredentials
+  CALL :DeleteLocalUsersFiles
+
   set /A PreviousScreen=_ViewDatabaseCredentials
   cls
   echo ----------------------------------------------------------
@@ -73,7 +75,8 @@ EXIT /B 0
   echo [7] Local DB User: Delete
   echo [8] Local DB User: List
   echo [9] Update Connection Credentials
-  echo [10] Reset
+  echo [10] Mongo Shell
+  echo [11] Reset
   echo [x] Exit
   set "choice=-1"
   echo.
@@ -94,7 +97,8 @@ EXIT /B 0
   if %choice% EQU 7 Goto DeleteLocalDatabaseUser
   if %choice% EQU 8 Goto ShowLocalDatabaseUsers
   if %choice% EQU 9 Goto SetDatabaseCredentials
-  if %choice% EQU 10 Goto ResetData
+  if %choice% EQU 10 Goto EnterMongoShell
+  if %choice% EQU 11 Goto ResetData
   if %choice% == x EXIT /B 0
 
   Goto ViewDatabaseCredentials
@@ -426,7 +430,6 @@ EXIT /B 0
     ))
   )
 
-  CALL :DeleteLocalUsersFiles
   set /p go=Press enter to continue...
 EXIT /B 0
 
@@ -435,8 +438,6 @@ EXIT /B 0
 :ListLocalDatabaseUsers
   setlocal enabledelayedexpansion
   set "dbName=%~1"
-
-  CALL :DeleteLocalUsersFiles
 
   %MONGO_SHELL% %dbName% --eval "db.getUsers()" > %TEMP_USERS_FILE%
   findstr /C:user: %TEMP_USERS_FILE% > %LOCAL_USERS_FILE%
@@ -485,6 +486,49 @@ EXIT /B 0
     set /p go=Press enter to continue...
     GoTo ViewDatabaseCredentials
   )
+EXIT /B 0
+
+
+:: Starts a mongodb shell (mongosh) that connects to a local or remote database
+:: using the stored database connection credentials file
+:EnterMongoShell
+  cls
+  echo ----------------------------------------------------------
+  echo CURRENT DATABASE CONNECTION
+
+  if %MONGO_HOST% EQU localhost (
+    echo  - Host: %MONGO_HOST%
+    echo  - Database name: %MONGO_DB%
+    echo  - Port: %MONGO_PORT%
+    echo.
+
+    set "continue=Y"
+    echo Press enter to connect to the LOCAL database
+    set /p continue=Type "n" and press enter to cancel:
+
+    if !continue! EQU Y (
+      %MONGO_SHELL% %MONGO_DB%
+    )
+  ) else (
+    echo  - Host: %MONGO_HOST%
+    echo  - Database name: %MONGO_DB%
+    echo  - Port: %MONGO_PORT%
+    echo  - User: %MONGO_USER%
+    echo  - Password: %MONGO_PASSWORD%
+    echo.
+
+    set "continue=Y"
+    echo Press enter to connect to the REMOTE database
+    set /p continue=Type "n" and press enter to cancel:
+
+    if !continue! EQU Y (
+      echo connecting to remote...
+      %MONGO_SHELL% mongodb+srv://%MONGO_USER%:%MONGO_PASSWORD%@%MONGO_HOST%/%MONGO_DB%
+    )
+  )
+
+  set /p go=Press enter to continue...
+  GoTo ViewDatabaseCredentials
 EXIT /B 0
 
 
